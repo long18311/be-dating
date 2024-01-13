@@ -30,7 +30,18 @@ public class PostService {
     private PostImageRepository postImageRepository;
     public List<PostDto> getAllPosts(User user) {
         // Lấy danh sách các Post từ Repository
-        List<Post> posts = postRepository.findAll();
+        Sort sort = Sort.by(Sort.Direction.DESC, "createDate");
+        List<Post> posts = postRepository.findAll(sort);
+
+        // Chuyển đổi mỗi Post thành PostDto và thu thập vào danh sách
+        return posts.stream()
+                .map(post -> new PostDto(post, user)) // Sử dụng constructor PostDto(Post post, User user) để chuyển đổi
+                .collect(Collectors.toList());
+    }
+    public List<PostDto> getPostsByType(User user,String type) {
+        // Lấy danh sách các Post từ Repository
+        Sort sort = Sort.by(Sort.Direction.DESC, "createDate");
+        List<Post> posts = postRepository.findByType(sort,type);
 
         // Chuyển đổi mỗi Post thành PostDto và thu thập vào danh sách
         return posts.stream()
@@ -52,15 +63,15 @@ public class PostService {
         return new PostDto(postRepository.getReferenceById(id),user) ;
     }
 
-    public PostDto createPost(User user, String title, String content, PostImage image) {
-        Post post = new Post(null, user, title, content, new Date(), null, null);
+    public PostDto createPost(User user, String title, String content,String type, PostImage image) {
+        Post post = new Post(null, user, title, content, type, new Date(), null, null);
         post = postRepository.save(post);
         image.setPost(post);
         image = postImageRepository.save(image);
         post.setImages(new HashSet<PostImage>(Set.of(image)));
         return new PostDto(post,user);
     }
-    public PostDto updatePost(Long id,User user, String title, String content) {
+    public PostDto updatePost(Long id,User user, String title, String content,String type) {
         Optional<Post> postOptional = postRepository.findById(id);
         if (postOptional.isEmpty()) {
             // Xử lý trường hợp không tìm thấy Post, ví dụ ném ra ngoại lệ
@@ -68,6 +79,7 @@ public class PostService {
         }
         Post post = postOptional.get();
         post.setTitle(title);
+        post.setType(type);
         post.setContent(content);
         post = postRepository.save(post);
         return new PostDto(post,user);
@@ -84,8 +96,8 @@ public class PostService {
 
         return postImage;
     }
-    public PostDto createPost(User user, String title, String content,List<PostImage> images) {
-        Post post = new Post(null,user,title,content,new Date(), null, null);
+    public PostDto createPost(User user, String title, String content,String type,List<PostImage> images) {
+        Post post = new Post(null,user,title,content, type,new Date(), null, null);
         post = postRepository.save(post);
         final Post finalPost = post;
         // Cập nhật thông tin Post cho mỗi PostImage và thu thập vào một list mới

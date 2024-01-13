@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -68,8 +70,11 @@ public class UserProfileController {
             @RequestParam("ward") String ward,
             @RequestParam("district") String district,
             @RequestParam("nickname") String nickname,
+            @RequestParam("height") float height,
+            @RequestParam("weight") float weight,
             @RequestParam("latitude") String latitude,
-            @RequestParam("longitude") String longitude
+            @RequestParam("longitude") String longitude,
+            @RequestParam("verify") String verify
 
     ) {
         try {
@@ -84,7 +89,6 @@ public class UserProfileController {
             Map<String, String> coverUploadResult = cloudinary.uploader().upload(cover.getBytes(), ObjectUtils.emptyMap());
             String coverPublicId = coverUploadResult.get("public_id");
             String coverUrl = cloudinary.url().generate(coverPublicId);
-
             user.setLastname(lastname);
             user.setFirstname(firstname);
             user.setAbout(about);
@@ -92,13 +96,16 @@ public class UserProfileController {
             user.setDistrict(district);
             user.setCity(city);
             user.setWard(ward);
+            user.setHeight(height);
+            user.setWeight(weight);
             user.setLatitude(Double.parseDouble(latitude));
             user.setLongitude(Double.parseDouble(longitude));
+            user.setVerify(verify);
             user.setNickname(nickname);
             user.setMaritalstatus(maritalstatus);
             String dateString = birthdate;
             // Định dạng của chuỗi ngày
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             try {
                 // Chuyển đổi chuỗi thành kiểu Date
                 Date date = dateFormat.parse(dateString);
@@ -187,17 +194,56 @@ public class UserProfileController {
         }
 
     }
-    @DeleteMapping(value ="/deleteUserImage/{imgId}")
-    public ResponseEntity<?> createUserImage(@PathVariable Long imgId){
+//    @DeleteMapping(value ="/deleteUserImage/{imgId}")
+//    public ResponseEntity<?> createUserImage(@PathVariable Long imgId){
+//        User user = userService.getUserWithAuthority();
+//        int result = userProfileServce.deleteImage(user,imgId);
+//        if(result == 1){
+//            user = userService.getUserWithAuthority();
+//            return ResponseEntity.ok(user.getImages());
+//        } else if(result == 0) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ảnh không tồn tại");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ảnh này không thuộc về hồ sơ của bạn");
+//        }
+//    }
+
+    @DeleteMapping(value = "/deleteImageUser/{imgId}")
+    public ResponseEntity<?> deleteUserImage(@PathVariable Long imgId) {
         User user = userService.getUserWithAuthority();
-        int result = userProfileServce.deleteImage(user,imgId);
-        if(result == 1){
-            user = userService.getUserWithAuthority();
-            return ResponseEntity.ok(user.getImages());
-        } else if(result == 0) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ảnh không tồn tại");
+        Images image = userProfileServce.getImageById(imgId); // Giả định rằng bạn có phương thức này để lấy ảnh từ DB
+
+        if (image != null && image.getUser().equals(user)) {
+            String url = image.getUrl();
+            String avatarPublicId = extractPublicIdFromUrl(url); // Bạn cần viết phương thức này để lấy public_id từ URL
+
+            try {
+                Map deleteParams = ObjectUtils.asMap("public_id", avatarPublicId);
+                cloudinary.uploader().destroy(avatarPublicId, deleteParams);
+
+                userProfileServce.deleteImage(image); // Giả định rằng bạn có phương thức này để xóa ảnh từ DB
+                user = userService.getUserWithAuthority();
+                return ResponseEntity.ok(user.getImages());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi xóa ảnh: " + e.getMessage());
+            }
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ảnh này không thuộc về hồ sơ của bạn");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ảnh không được tìm thấy hoặc không thuộc về bạn");
+        }
+    }
+    private String extractPublicIdFromUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            String path = uri.getPath();
+            String[] pathParts = path.split("/");
+            // public_id thường nằm ở phần tử cuối cùng trước phần mở rộng
+            String publicIdWithExtension = pathParts[pathParts.length - 1];
+            // Loại bỏ phần mở rộng file
+            String publicId = publicIdWithExtension.substring(0, publicIdWithExtension.lastIndexOf('.'));
+            return publicId;
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

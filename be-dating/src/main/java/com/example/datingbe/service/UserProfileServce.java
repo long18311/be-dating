@@ -31,6 +31,15 @@ public class UserProfileServce {
         List<User> friends = friendRequestRepository.findFriendsForUser(user);
     return  new UserProfileDto(user,friends.stream().count());
     }
+
+    public void deleteImage(Images image) {
+        imagesRepository.deleteById(image.getId());
+    }
+
+    public Images getImageById(Long imgId) {
+        return imagesRepository.getReferenceById(imgId);
+    }
+
     public List<InformationField> getInformationFields(){
         return informationFieldRepository.findAll();
     }
@@ -43,18 +52,20 @@ public class UserProfileServce {
     }
     public UserProfileDto updateUserProfile(Long userId, UserProfileDto userProfile){
         User user = userRepository.getOne(userId);
-        user.setFirstname(userProfile.getFirstname());
-        user.setLastname(userProfile.getLastname());
-        user.setAbout(userProfile.getAbout());
-        user.setSex(userProfile.getSex());
+//        user.setFirstname(userProfile.getFirstname());
+//        user.setLastname(userProfile.getLastname());
         user.setDistrict(userProfile.getDistrict());
         user.setCity(userProfile.getCity());
         user.setWard(userProfile.getWard());
+        user.setAbout(userProfile.getAbout());
+//        user.setSex(userProfile.getSex());
         user.setLatitude(userProfile.getLatitude());
         user.setLongitude(userProfile.getLongitude());
         user.setNickname(userProfile.getNickname());
         user.setMaritalstatus(userProfile.getMaritalstatus());
-        user.setBirthday(userProfile.getBirthday());
+//        user.setBirthday(userProfile.getBirthday());
+        user.setWeight(userProfile.getWeight());
+        user.setHeight(userProfile.getHeight());
         Set<InformationOption> informationOptionsUser = getinformationOptions(userProfile.getInformationOptions().stream().map(obj -> obj.getId()).collect(Collectors.toList())).stream().collect(Collectors.toSet());
         user.setInformationOptions(informationOptionsUser);
         user = userRepository.save(user);

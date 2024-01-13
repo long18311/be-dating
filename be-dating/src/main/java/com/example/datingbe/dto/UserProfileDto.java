@@ -36,6 +36,9 @@ public class UserProfileDto {
     private String about;
     private String sex;
     private String maritalstatus;
+    private String verify;
+    private float height;
+    private float weight;
     private double latitude;
     private double longitude;
     private Boolean security;
@@ -65,9 +68,12 @@ public class UserProfileDto {
         this.cover = user.getCover();
         this.lastname = user.getLastname();
         this.firstname = user.getFirstname();
+        this.height = user.getHeight();
+        this.weight = user.getWeight();
+        this.security = user.getSecurity();
         this.latitude = user.getLatitude();
         this.longitude = user.getLongitude();
-        this.security = user.getSecurity();
+        this.verify = user.getVerify();
         this.numberFriend = numberFriend;
     }
 }

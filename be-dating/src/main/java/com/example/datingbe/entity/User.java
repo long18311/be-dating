@@ -42,11 +42,11 @@ public class User implements Serializable {
     private String sex;
     private String nickname;
     private String maritalstatus;
+    private String verify;
     private float height;
     private float weight;
     private double latitude;
     private double longitude;
-
 
     @JsonIgnoreProperties(value = {"user"})
     @ManyToMany(fetch = FetchType.EAGER)

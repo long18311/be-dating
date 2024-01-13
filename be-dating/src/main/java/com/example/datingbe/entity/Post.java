@@ -24,6 +24,7 @@ public class Post {
 
     private String title;
     private String content;
+    private String type;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;

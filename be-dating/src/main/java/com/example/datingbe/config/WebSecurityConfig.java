@@ -72,7 +72,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/user/**").hasAuthority(Contains.ROLE_USER)
                 .antMatchers("/api/userlogged/**").authenticated()
                 .antMatchers("/api/employee/**").hasAnyAuthority(Contains.ROLE_ADMIN, Contains.ROLE_EMPLOYEE)
-                .antMatchers("/api/post/getAll").authenticated()
+                .antMatchers("/api/post/get/getAll").authenticated()
                 .antMatchers("/api/post/getPage").authenticated()
                 .antMatchers("/api/post/get/**").authenticated()
                 .antMatchers("/api/post/**").hasAnyAuthority(Contains.ROLE_ADMIN)
@@ -81,18 +81,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/like/**").authenticated()
                 .antMatchers("/api/reports/status/**").hasAnyAuthority(Contains.ROLE_ADMIN)
                 .antMatchers("/api/reports/**").hasAnyAuthority(Contains.ROLE_ADMIN)
+                .antMatchers("/api/graph/**").permitAll()
                 .and()
-//                .httpBasic().and()
-//                .logout().lo
                 .apply(securityConfigurerAdapter());
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
     }
+
     private JWTConfigurer securityConfigurerAdapter() {
         return new JWTConfigurer(tokenProvider, userRepository);
     }
 
 }
-

@@ -39,8 +39,6 @@ public class UserDto {
 
     private List<Images> images;
 
-
-
     public UserDto(User user){
         this.actived = user.getActived();
         this.ward = user.getWard();
@@ -69,4 +67,3 @@ public class UserDto {
 
 
 }
-

@@ -15,11 +15,11 @@ public class Friend{
 
     @ManyToOne
     @JoinColumn(name = "sender_user_id ", referencedColumnName = "id")
-    private User sender_user_id;
+    private User senderUser;
 
     @ManyToOne
     @JoinColumn(name = "receiver_user_id ", referencedColumnName = "ID")
-    private User receiver_user_id ;
+    private User receiverUser ;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending'")

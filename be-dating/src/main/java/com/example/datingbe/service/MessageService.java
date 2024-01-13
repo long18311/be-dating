@@ -26,11 +26,25 @@ public class MessageService {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private SimpUserRegistry simpUserRegistry;
+    public String meet(User sen, long userId, String message) {
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/queue/meet",
+                sen.getId()+":"+message);
+        return "Thành công";
+    }
+    public String joinmeet(User sen, long userId, String message) {
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/queue/joinmeet",
+                sen.getId()+":"+message);
+        return "Thành công";
+    }
 
     public Message sendMessages(User sender, long receiverId, String content) {
         // Tạo và lưu tin nhắn mới
         User receiver = userRepository.getOne(receiverId);
-        Message newMessage = new Message(null, sender, receiver, content, 0, new Date());
+        Message newMessage = new Message(null, sender, receiver, Contains.encrypt(content), 0, new Date());
         newMessage = messageRepository.save(newMessage);
 
         // Gửi tin nhắn realtime
@@ -46,8 +60,7 @@ public class MessageService {
     public Message sendMessage(User sen,long userId,String message){
 
         User rec = userRepository.getOne(userId);
-
-        Message thu = new Message(null,sen,rec,message,0,new Date());
+        Message thu = new Message(null,sen,rec,Contains.encrypt(message),0,new Date());
         thu =messageRepository.save(thu);
 //        System.out.println("vào rồi nè");
         messagingTemplate.convertAndSendToUser(
@@ -59,14 +72,14 @@ public class MessageService {
         return thu;
     }
 
-    @Transactional
+
     public List<Message> getMessage(User sen,User rec){
         messageRepository.updateMessagesStatus(sen,rec);
         List<Message> messages = messageRepository.findByUsers(sen.getId(),rec.getId());
-        messageRepository.updateMessagesStatus(sen,rec);
-//        for (Message message : messages) {
-//            Hibernate.initialize(message.getSender());
-//        }
+        for (Message message : messages) {
+            message.setContent(Contains.decrypt(message.getContent()));
+        }
+//
 
         return messages;
     }
@@ -79,6 +92,7 @@ public class MessageService {
         for (UserMeDto user : users) {
             // Set the user's online status based on whether they are in the onlineUsernames set
             user.setIsOn(onlineUsernames.contains(user.getId()));
+            user.setContent(Contains.decrypt(user.getContent()));
         }
         return users;
     }
@@ -87,10 +101,8 @@ public class MessageService {
         if(user.getId() != messageRepository.getOne(id).getSender().getId()) {
             return 0;
         }
-        return messageRepository.recallMessage(id);
+
+        return messageRepository.recallMessage(id, Contains.encrypt("tin nhắn bị thu hồi"));
     }
-
-
-
 
 }

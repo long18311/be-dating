@@ -3,6 +3,7 @@ package com.example.datingbe.repository;
 import com.example.datingbe.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void updatePost(Long postId, String title, String content);
     @Query("SELECT p FROM Post p ORDER BY p.createDate DESC")
     Page<Post> findAllByOrderByCreateDateDesc(Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.type = :type")
+    List<Post> findByType(Sort sort,String type);
 
 
 

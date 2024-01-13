@@ -74,7 +74,7 @@ public class UserReportService {
             user.setActived(0);
             user = userRepository.save(user);
             Notification notification = new Notification();
-            notification.setMessage(userReport.getReportContent());
+            notification.setMessage(userReport.getAdminNotes());
             notification.setStatus(0);
             notification.setSender(userReport.getReportedUser()); // Đặt người gửi là người chấp nhận lời mời
             notification.setRecipient(userReport.getReportedBy()); // Đặt người nhận là người đã gửi lời mời
@@ -94,6 +94,17 @@ public class UserReportService {
             userReport.setAdminNotes(adminNotes);
             userReport.setStatus("rejected");
             userReport.setUserHandlingReport(userHandlingReport);
+            userReport = userReportRepository.save(userReport);
+            User user = userReport.getReportedUser();
+            user.setActived(1);
+            user = userRepository.save(user);
+            Notification notification = new Notification();
+            notification.setMessage(userReport.getAdminNotes());
+            notification.setStatus(0);
+            notification.setSender(userReport.getReportedUser()); // Đặt người gửi là người chấp nhận lời mời
+            notification.setRecipient(userReport.getReportedBy()); // Đặt người nhận là người đã gửi lời mời
+            notification.setTimestamp(new Timestamp(System.currentTimeMillis()));
+            notificationService.saveNotification(notification);
             return 1;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -102,6 +113,9 @@ public class UserReportService {
     }
     public Page<UserReport> getReportPagebyStatusandReportType(String status,String reportType, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        if(status.equalsIgnoreCase("all")){
+            return userReportRepository.findByReportType(reportType, pageable);
+        }
 
         return userReportRepository.getReportPagebyStatusandReportType(status,reportType, pageable);
     }

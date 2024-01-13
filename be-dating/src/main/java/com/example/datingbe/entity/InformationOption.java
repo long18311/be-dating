@@ -18,11 +18,10 @@ public class InformationOption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "information_field_id")
     @JsonIgnoreProperties("informationOptions")
     private InformationField informationField;
     @Column(name = "option_value")
-    private String option; // Ví dụ: "Kim Ngưu", "Bạch Dương"
+    private String option;
 }

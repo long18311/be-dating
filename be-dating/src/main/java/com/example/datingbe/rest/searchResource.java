@@ -35,29 +35,42 @@ public class searchResource {
     }
 
     @PostMapping("/users-by-gender-age-location")
-    public List<CombinedData> getUsersByGenderAndAge(
+    public ResponseEntity<?> getUsersByGenderAndAge(
             @RequestParam Long id,
             @RequestParam String gender,
             @RequestParam int ageMin,
             @RequestParam int ageMax,
-            @RequestParam double locationMin,
-            @RequestParam double locationMax,
+            @RequestParam float heightMin,
+            @RequestParam float heightMax,
+            @RequestParam float weightMin,
+            @RequestParam float weightMax,
+            @RequestParam Double locationMin,
+            @RequestParam Double locationMax,
             @RequestParam("latitude") String latitude,
             @RequestParam("longitude") String longitude,
+            @RequestParam("city") String city,
+            @RequestParam("ward") String ward,
+            @RequestParam("district") String district,
             @RequestBody List<Long> informationOptionIDs
 
     ) {
+
+    try {
         if(informationOptionIDs != null){
             informationOptionIDs.forEach(info -> System.out.println(info));
         }
         List<CombinedData> newList = new ArrayList<>();
 
         User userLogged = userService.getOne(id);
-        System.out.println(latitude+":"+longitude);
+
+        System.out.println(city);
+        System.out.println(ward);
+        System.out.println(district);
+
         userLogged.setLatitude(Double.parseDouble(latitude));
         userLogged.setLongitude(Double.parseDouble(longitude));
         userLogged = userService.save(userLogged);
-        List<User> usersFind = service.findUsersByGenderAndAgeRange(gender.trim(), ageMin, ageMax);
+        List<User> usersFind = service.findUsersByGenderAgeHeightWeightCityWardDistrict(gender.trim(), ageMin,  ageMax, heightMin, heightMax, weightMin, weightMax, city, ward, district);
         List<User> usersFinds2 = new ArrayList<User>();
 
         Set<Long> optionIDs = new HashSet<>();
@@ -77,11 +90,15 @@ public class searchResource {
         }
         for (User o : usersFinds2) {
             double kms = userService.getDistanceBetweenPointsNew(userLogged.getLatitude(), userLogged.getLongitude(), o.getLatitude(), o.getLongitude(), "kilometers");
-            if (kms >= locationMin && kms <= locationMax) {
+           if (kms >= locationMin && kms <= locationMax) {
                 newList.add(new CombinedData(userLogged, o, kms));
             }
         }
-        return newList;
+        return ResponseEntity.ok(newList);
+
+    }catch (Exception e){
+        return ResponseEntity.status(500).body("Lỗi Server: locationMin hoặc locationMax là null");
+    }
     }
 
 }

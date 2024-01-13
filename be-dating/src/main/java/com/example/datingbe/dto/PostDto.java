@@ -24,6 +24,7 @@ public class PostDto {
     private Date createDate;
     private Set<PostImage> images;
     private int islike=0;
+    private String type;
 //    private int countLike;
 //    private int countDislike;
     private Set<UserDto> userLikes;
@@ -35,6 +36,7 @@ public class PostDto {
         this.content = post.getContent();
         this.createDate = post.getCreateDate();
         this.images = post.getImages();
+        this.type = post.getType();
 //        this.countLike = 0;
 //        this.countDislike = 0;
         userLikes = new HashSet<>();
@@ -67,6 +69,7 @@ public class PostDto {
         this.content = post.getContent();
         this.createDate = post.getCreateDate();
         this.images = post.getImages();
+        this.type = post.getType();
 //        this.countLike = 0;
 //        this.countDislike = 0;
         userLikes = new HashSet<>();

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -31,13 +32,12 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "WHERE (m.status = 0 AND m.receiver.id = :currentUserId) " +
             "AND u.id != :currentUserId")
     Long countUnreadConversations(@Param("currentUserId") Long currentUserId);
+    @Transactional
     @Modifying
     @Query("UPDATE Message m SET m.status = 1 WHERE  (m.sender = :rec AND m.receiver = :sen) AND m.status = 0")
     int updateMessagesStatus(@Param("sen") User sen, @Param("rec") User rec);
     @Modifying
-    @Query("UPDATE Message m SET m.status = 2,m.content = 'Tin nhắn đã được thu hồi' WHERE m.id = :id")
-    int recallMessage(@Param("id")Long id);
-
-
+    @Query("UPDATE Message m SET m.status = 2,m.content = :content WHERE m.id = :id")
+    int recallMessage(@Param("id")Long id,@Param("content") String content);
 
 }

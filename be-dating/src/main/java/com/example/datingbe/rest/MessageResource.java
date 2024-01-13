@@ -38,6 +38,28 @@ public class MessageResource {
     private MessageRepository messageRepository;
     @Autowired
     private Cloudinary cloudinary;
+
+    @GetMapping("/encrypt")
+    public ResponseEntity<String> encrypt(@RequestParam("meet") String meet)  {
+
+        return ResponseEntity.ok(Contains.encrypt(meet));
+    }
+    @GetMapping("/decrypt")
+    public ResponseEntity<String> decrypt(@RequestParam("meet") String meet)  {
+        return ResponseEntity.ok(Contains.decrypt(meet));
+    }
+    @PostMapping("meet/{userId}")
+    public ResponseEntity<String> meet(@PathVariable long userId, @RequestBody MessagePayload payload)  {
+
+        User sen = userService.getUserWithAuthority();
+        return ResponseEntity.ok(messageService.meet(sen,userId,payload.getMessage()));
+    }
+    @PostMapping("joinmeet/{userId}")
+    public ResponseEntity<String> joinmeet(@PathVariable long userId, @RequestBody MessagePayload payload)  {
+
+        User sen = userService.getUserWithAuthority();
+        return ResponseEntity.ok(messageService.joinmeet(sen,userId,payload.getMessage()));
+    }
     @PostMapping("/upload/{userId}")
     public ResponseEntity<String> uploadAudio(@PathVariable long userId,@RequestParam("audioFile") MultipartFile audioFile) {
         User sen = userService.getUserWithAuthority();
@@ -72,7 +94,6 @@ public class MessageResource {
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<Message>> getMessage(@PathVariable long userId){
-        System.out.println("vào rồi nè");
         User sen = userService.getUserWithAuthority();
         User rec = userRepository.getOne(userId);
         return ResponseEntity.ok(messageService.getMessage(sen,rec));

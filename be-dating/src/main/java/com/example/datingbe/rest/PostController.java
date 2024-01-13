@@ -37,20 +37,26 @@ public class PostController {
         Page<PostDto> postPage = postService.getPagePosts( user, page, size);
         return ResponseEntity.ok().body(postPage);
     }
-    @GetMapping("/getAll")
+    @GetMapping("/get/getAll")
     public ResponseEntity<List<PostDto>> getAllPosts(){
         User user = userService.getUserWithAuthority();
         return ResponseEntity.ok(postService.getAllPosts(user));
     }
-    @GetMapping("/get/{postId}")
+    @GetMapping("/get/{type}")
+    public ResponseEntity<List<PostDto>> getListPostByType(@PathVariable String type){
+        User user = userService.getUserWithAuthority();
+        return ResponseEntity.ok(postService.getPostsByType(user,type));
+    }
+    @GetMapping("/get/id/{postId}")
     public ResponseEntity<PostDto> getPostById(@PathVariable long postId){
         User user = userService.getUserWithAuthority();
         return ResponseEntity.ok(postService.getPost(postId,user));
     }
     @PostMapping()
     public ResponseEntity<?> postPost(@RequestParam String title,
-                                            @RequestParam String content,
-                                            @RequestPart("image") MultipartFile image){
+                                      @RequestParam String type,
+                                      @RequestParam String content,
+                                      @RequestPart("image") MultipartFile image){
         User user = userService.getUserWithAuthority();
         try {
             Map uploadResult = cloudinary.uploader().upload(image.getBytes(), ObjectUtils.asMap(
@@ -60,18 +66,20 @@ public class PostController {
             // In URL để kiểm tra
             String url = (String) uploadResult.get("url");
 
-            return ResponseEntity.ok(postService.createPost(user, title, content, new PostImage(url)));
+            return ResponseEntity.ok(postService.createPost(user, title, content,type, new PostImage(url)));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not upload file: " + e.getMessage());
         }
     }
     @PutMapping("/{postId}")
-    public ResponseEntity<?> putPost(@PathVariable long postId,@RequestParam String title,
-                                      @RequestParam String content
+    public ResponseEntity<?> putPost(@PathVariable long postId,
+                                     @RequestParam String title,
+                                     @RequestParam String type,
+                                     @RequestParam String content
                                       ){
         User user = userService.getUserWithAuthority();
-        PostDto post = postService.updatePost(postId,user,title,content);
+        PostDto post = postService.updatePost(postId,user,title,content,type);
         if(post == null){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("không tìm thấy post");
         }
